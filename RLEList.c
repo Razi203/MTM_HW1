@@ -1,10 +1,10 @@
 #include "RLEList.h"
 
-typedef struct RLEList_t {
+struct RLEList_t {
     char val;
     int count;
     struct RLEList_t *next;
-}*RLEList;
+};
 
 //implement the functions here
 
@@ -15,7 +15,8 @@ RLEList RLEListCreate(){
     }
     new_list -> next = NULL;
     new_list -> count = 0;
-    
+    new_list -> val = 0;
+    return new_list;
 }
 
 
@@ -32,6 +33,11 @@ void RLEListDestroy(RLEList list){
 RLEListResult RLEListAppend(RLEList list, char value){
     if (list == NULL){
         return RLE_LIST_NULL_ARGUMENT;
+    }
+    if (list -> count == 0){
+        list -> val = value;
+        list -> count++;
+        return RLE_LIST_SUCCESS;
     }
     while (list -> next != NULL){
         list = list -> next;
@@ -57,7 +63,7 @@ int RLEListSize(RLEList list){
         return -1;
     }
     int size = 0;
-    while(list){
+    while(list != NULL){
         size += list->count;
         list = list->next;
     }
@@ -73,7 +79,7 @@ RLEListResult RLEListRemove(RLEList list, int index){
         return RLE_LIST_INDEX_OUT_OF_BOUNDS;
     }
     RLEList prev = list;
-    while (index > list->count){
+    while (index >= list->count){
         index -= list->count;
         prev = list;
         list = list -> next;
@@ -83,12 +89,11 @@ RLEListResult RLEListRemove(RLEList list, int index){
         list -> count--;
         return RLE_LIST_SUCCESS;
     }
-
-    if (prev == list){
-        if (list -> next == NULL){
+    if (list -> next == NULL){
             list -> count = 0;
             return RLE_LIST_SUCCESS;
-        }
+    }
+    if (prev == list){
         RLEList to_be_removed = list -> next;
         list -> val = to_be_removed -> val;
         list -> next = to_be_removed -> next;
@@ -98,10 +103,21 @@ RLEListResult RLEListRemove(RLEList list, int index){
     }
     prev -> next = list -> next;
     free(list);
+    if (prev -> val == prev -> next -> val){
+        RLEList to_be_removed = prev -> next;
+        prev -> count += to_be_removed -> count;
+        prev -> next = to_be_removed -> next;
+        free(to_be_removed);
+    }
     return RLE_LIST_SUCCESS;
 }
 
 char RLEListGet(RLEList list, int index, RLEListResult *result){
+    if (result == NULL){
+        RLEListResult dummy = RLE_LIST_ERROR;
+        result = &dummy; 
+    }
+
     if (list == NULL){
         *result = RLE_LIST_NULL_ARGUMENT;
         return 0;
@@ -110,13 +126,15 @@ char RLEListGet(RLEList list, int index, RLEListResult *result){
         *result=RLE_LIST_INDEX_OUT_OF_BOUNDS;
         return 0;
     }
+
     int currentIndex=0;
-    while(list && (currentIndex<index)){
+    while(list != NULL && (currentIndex + list->count <= index)){
         currentIndex += list->count;
         list = list->next;
     }
-    char returnedChar=list->val;
-    *result=RLE_LIST_SUCCESS;
+    
+    char returnedChar = list->val;
+    *result = RLE_LIST_SUCCESS;
     return returnedChar;
 }
 
@@ -124,36 +142,80 @@ RLEListResult RLEListMap(RLEList list, MapFunction map_function){
     if (list == NULL || map_function == NULL){
         return RLE_LIST_NULL_ARGUMENT;
     }
+    RLEList prev = list;
     while (list != NULL){
         list -> val = map_function(list -> val);
+        if (prev != list && prev -> val == list -> val){
+            prev -> count += list -> count;
+            prev -> next = list -> next;
+            free(list);
+            list = prev;
+        }
+        prev = list;
         list = list -> next;
     }
     return RLE_LIST_SUCCESS;
 }
 
+int countDigits(RLEList list){
+    int digits = 0;
+    while (list != NULL){
+        int num = list -> count;
+        while (num > 0){
+            digits++;
+            num /= 10;
+        }
+        list = list -> next;
+    }
+    return digits;
+}
+
+void reverseString(char *str, int size){
+    while (size > 1){
+        char temp = *str;
+        *str = str[size-1];
+        *(str++ + size-1) = temp;
+        size -= 2;
+    }
+}
+
+
 char* RLEListExportToString(RLEList list, RLEListResult* result){
+    if (result == NULL){
+        RLEListResult dummy = RLE_LIST_ERROR;
+        result = &dummy; 
+    }
+    
     if(list==NULL){
         *result=RLE_LIST_NULL_ARGUMENT;
         return NULL;
     }
     int RLEListLen=0;
     RLEList head=list;
-    while(head){
+    while(head && head -> count != 0){
         RLEListLen++;
         head=head->next;
     }
-    char *returnedStr = malloc(3*RLEListLen);
+    int size = 2*RLEListLen + countDigits(list);
+    char *returnedStr = malloc(size + 1);
     if(returnedStr==NULL){
         *result = RLE_LIST_OUT_OF_MEMORY;
         return NULL;
     }
-     for(int i = 0; i < RLEListLen; i++){
-        returnedStr[i*3] = list->val;
-        returnedStr[i*3 +1] = list->count;
-        returnedStr[i*3 +2] = '\n';
+    int i = 0;
+    while(i < size){
+        returnedStr[i++] = list->val;
+        int start = i, num = list -> count;
+        while(num > 0){
+            returnedStr[i++] = num % 10 + '0';
+            num /= 10;
+        }
+        reverseString(returnedStr + start, i - start);
+        returnedStr[i++] = '\n';
         list=list->next;
-     }
-    returnedStr[3*RLEListLen]='\0';
+    }
+    returnedStr[size]='\0';
     *result=RLE_LIST_SUCCESS;
     return returnedStr;
 }
+
