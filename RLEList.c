@@ -22,10 +22,10 @@ RLEList RLEListCreate(){
 
 void RLEListDestroy(RLEList list){
     while(list){
-    RLEList toDestroy=list;
-    list=list->next;
-    free(toDestroy);
-}
+        RLEList toDestroy=list;
+        list=list->next;
+        free(toDestroy);
+    }
 }
 
 

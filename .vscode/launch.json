@@ -8,8 +8,12 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/RLE_List_Test",
-            "args": [],
+            "program": "${workspaceFolder}/AsciiArtTool",
+            "args": [
+                "-i",
+                "tests/dog.txt",
+                "out"
+            ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
