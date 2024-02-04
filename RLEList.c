@@ -19,6 +19,16 @@ RLEList RLEListCreate(){
 }
 
 
+void RLEListDestroy(RLEList list){
+    while(list){
+    RLEList toDestroy=list;
+    list=list->next;
+    free(toDestroy);
+}
+}
+
+
+
 RLEListResult RLEListAppend(RLEList list, char value){
     if (list == NULL){
         return RLE_LIST_NULL_ARGUMENT;
@@ -36,8 +46,22 @@ RLEListResult RLEListAppend(RLEList list, char value){
     }
     node -> count = 1;
     node -> val = value;
+    node -> next = list -> next;
     list -> next = node;
     return RLE_LIST_SUCCESS;
+}
+
+
+int RLEListSize(RLEList list){
+    if(list==NULL){
+        return -1;
+    }
+    int size=0;
+    while(list){
+    size+=list->count;
+    list=list->next;
+}
+    return size;
 }
 
 
@@ -45,18 +69,25 @@ RLEListResult RLEListRemove(RLEList list, int index){
     if (list == NULL){
         return RLE_LIST_NULL_ARGUMENT;
     }
-
-    
-    // returning out of bounds if list is empty or incorrect index
     if (index < 0 || list -> count == 0){
         return RLE_LIST_INDEX_OUT_OF_BOUNDS;
     }
-
-    if (index == 0){
-        if (list -> count > 1){
-            list -> count--;
-            return RLE_LIST_SUCCESS;
+    RLEList prev = list;
+    while (index > list->count){
+        if (list -> next == NULL){ 
+            return RLE_LIST_INDEX_OUT_OF_BOUNDS;
         }
+        index -= list->count;
+        prev = list;
+        list = list -> next;
+    }
+
+    if (list -> count > 1){
+        list -> count--;
+        return RLE_LIST_SUCCESS;
+    }
+
+    if (prev == list){
         if (list -> next == NULL){
             list -> count = 0;
             return RLE_LIST_SUCCESS;
@@ -64,28 +95,33 @@ RLEListResult RLEListRemove(RLEList list, int index){
         RLEList to_be_removed = list -> next;
         list -> val = to_be_removed -> val;
         list -> next = to_be_removed -> next;
+        list -> count = to_be_removed -> count;
         free(to_be_removed);
         return RLE_LIST_SUCCESS;
     }
-
-    // moving to the node before the one to be removed
-    while (index > 1){
-        if (list -> next == NULL){ 
-            return RLE_LIST_INDEX_OUT_OF_BOUNDS;
-        }
-        list = list -> next;
-    }
-    if (list -> next == NULL){
-        return RLE_LIST_INDEX_OUT_OF_BOUNDS;
-    }
-
-    RLEList to_be_removed = list -> next;
-    list -> next = to_be_removed -> next;
-    free(to_be_removed);
+    prev -> next = list -> next;
+    free(list);
     return RLE_LIST_SUCCESS;
 }
 
-
+char RLEListGet(RLEList list, int index, RLEListResult *result){
+    if (list==NULL){
+        *result=RLE_LIST_NULL_ARGUMENT;
+        return 0;
+    }
+    if(index<0 || index>RLEListSize(list)){
+        *result=RLE_LIST_INDEX_OUT_OF_BOUNDS;
+        return 0;
+    }
+    int currentIndex=0;
+    while(list && (currentIndex<index)){
+        currentIndex+=list->count;
+        list=list->next;
+    }
+    char returnedChar=list->val;
+    *result=RLE_LIST_SUCCESS;
+    return returnedChar;
+}
 
 RLEListResult RLEListMap(RLEList list, MapFunction map_function){
     if (list == NULL || map_function == NULL){
@@ -96,4 +132,32 @@ RLEListResult RLEListMap(RLEList list, MapFunction map_function){
         list = list -> next;
     }
     return RLE_LIST_SUCCESS;
+}
+
+char* RLEListExportToString(RLEList list, RLEListResult* result){
+    if(list==NULL){
+        *result=RLE_LIST_NULL_ARGUMENT;
+        return NULL;
+    }
+    int RLEListLen=0;
+    RLEList head=list;
+    while(head){
+        RLEListLen++;
+        head=head->next;
+    }
+    char returnedStr=malloc(3*RLEListLen);
+    if(returnedStr==NULL){
+        *return=RLE_LIST_OUT_OF_MEMORY;
+        return NULL;
+    }
+     for(int i=0, int j=1, int k=2; k<3*RLEListLen && j<3*RLEListLen && i<3*RLEListLen;){
+        returnedStr[i] = list->val;
+        returnedStr[j] = list->count;
+        returnedStr[k] = '\n';
+        list=list->next;
+        i+=3, k+=3, j+=3;
+     }
+    returnedStr[3*RLEListLen]='\0';
+    *result=RLE_LIST_SUCCESS;
+    return returnedStr;
 }
