@@ -1,0 +1,74 @@
+        -:    0:Source:main.c
+        -:    1:#include <stdio.h>
+        -:    2:#include <stdlib.h>
+        -:    3:#include <string.h>
+        -:    4:#include "AsciiArtTool.h"
+        -:    5:
+        -:    6:#define INVERTED "-i"
+        -:    7:#define ENCODED "-e"
+        -:    8:
+        -:    9:char invertChar(char c);
+        -:   10:
+        -:   11:void error(char* message, char* filename);
+        -:   12:
+      841:   13:int main(int argc, char **argv){
+      841:   14:    if (argc != 4){
+        1:   15:        printf("%d\n", argc);
+        1:   16:        error("Usage: AsciiArtTool <flags> <source> <target>", NULL);
+        1:   17:        return 0;
+        -:   18:    }
+      840:   19:    char *flags = argv[1];
+      840:   20:    if (strcmp(flags,INVERTED) != 0 && strcmp(flags,ENCODED)){
+        1:   21:        error("Usage: AsciiArtTool <flags> <source> <target>", NULL); // Check Later
+        1:   22:        return 0;
+        -:   23:    }
+      839:   24:    FILE* source = fopen(argv[2], "r");
+      839:   25:    if (!source){
+        1:   26:        error("Error: can not open", argv[1]);
+        1:   27:        return 0;
+        -:   28:    }
+      838:   29:    FILE* target = fopen(argv[3], "w");
+      838:   30:    if (!target){
+    #####:   31:        fclose(source);
+    #####:   32:        error("Error: can not open", argv[2]);
+    #####:   33:        return 0;
+        -:   34:    }
+        -:   35:    
+      838:   36:    RLEList list = asciiArtRead(source);
+      838:   37:    if(list == NULL){
+    #####:   38:        fclose(source);
+    #####:   39:        fclose(target);
+    #####:   40:        return RLE_LIST_OUT_OF_MEMORY;
+        -:   41:    }
+      838:   42:    if (strcmp(flags, ENCODED) == 0){
+      419:   43:        RLEListResult result = asciiArtPrintEncoded(list, target);
+      419:   44:        fclose(source);
+      419:   45:        fclose(target);
+      419:   46:        RLEListDestroy(list);
+      419:   47:        return result;
+        -:   48:    }
+      419:   49:    if (strcmp(flags, INVERTED) == 0){
+      419:   50:        RLEListMap(list, invertChar);
+      419:   51:        RLEListResult result = asciiArtPrint(list, target);
+      419:   52:        fclose(source);
+      419:   53:        fclose(target);
+      419:   54:        RLEListDestroy(list);
+      419:   55:        return result;
+        -:   56:    }
+        -:   57:}
+        -:   58:
+        -:   59:
+   658266:   60:char invertChar(char c){
+   658266:   61:    if (c == ' '){
+     7787:   62:        return '@';
+        -:   63:    }
+   650479:   64:    if (c == '@'){
+     7153:   65:        return ' ';
+        -:   66:    }
+   643326:   67:    return c;
+        -:   68:}
+        -:   69:
+        -:   70:
+        3:   71:void error(char* message, char* filename){
+        3:   72:    printf("%s %s\n", message, filename ? filename : "");
+        3:   73:}
