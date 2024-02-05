@@ -12,24 +12,24 @@ void error(char* message, char* filename);
 
 int main(int argc, char **argv){
     if (argc != 4){
-        printf("%d\n", argc);
-        error("Usage: AsciiArtTool <flags> <source> <target>", NULL);
+        //printf("%d\n", argc);
+        //error("Usage: AsciiArtTool <flags> <source> <target>", NULL);
         return 0;
     }
     char *flags = argv[1];
     if (strcmp(flags,INVERTED) != 0 && strcmp(flags,ENCODED)){
-        error("Usage: AsciiArtTool <flags> <source> <target>", NULL); // Check Later
+        //error("Usage: AsciiArtTool <flags> <source> <target>", NULL); // Check Later
         return 0;
     }
     FILE* source = fopen(argv[2], "r");
     if (!source){
-        error("Error: can not open", argv[1]);
+        //error("Error: can not open", argv[1]);
         return 0;
     }
     FILE* target = fopen(argv[3], "w");
     if (!target){
         fclose(source);
-        error("Error: can not open", argv[2]);
+        //error("Error: can not open", argv[2]);
         return 0;
     }
     
