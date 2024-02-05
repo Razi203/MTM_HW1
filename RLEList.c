@@ -113,17 +113,16 @@ RLEListResult RLEListRemove(RLEList list, int index){
 }
 
 char RLEListGet(RLEList list, int index, RLEListResult *result){
-    if (result == NULL){
-        RLEListResult dummy = RLE_LIST_ERROR;
-        result = &dummy; 
-    }
-
     if (list == NULL){
-        *result = RLE_LIST_NULL_ARGUMENT;
+        if (result != NULL){
+            *result = RLE_LIST_NULL_ARGUMENT;    
+        }
         return 0;
     }
     if(index < 0 || index >= RLEListSize(list)){
-        *result=RLE_LIST_INDEX_OUT_OF_BOUNDS;
+        if (result != NULL){
+            *result=RLE_LIST_INDEX_OUT_OF_BOUNDS;            
+        }
         return 0;
     }
 
@@ -134,7 +133,10 @@ char RLEListGet(RLEList list, int index, RLEListResult *result){
     }
     
     char returnedChar = list->val;
-    *result = RLE_LIST_SUCCESS;
+    
+    if (result != NULL){
+        *result = RLE_LIST_SUCCESS;
+    }
     return returnedChar;
 }
 
@@ -181,11 +183,6 @@ void reverseString(char *str, int size){
 
 
 char* RLEListExportToString(RLEList list, RLEListResult* result){
-    if (result == NULL){
-        RLEListResult dummy = RLE_LIST_ERROR;
-        result = &dummy; 
-    }
-    
     if(list==NULL){
         *result=RLE_LIST_NULL_ARGUMENT;
         return NULL;
@@ -199,7 +196,9 @@ char* RLEListExportToString(RLEList list, RLEListResult* result){
     int size = 2*RLEListLen + countDigits(list);
     char *returnedStr = malloc(size + 1);
     if(returnedStr==NULL){
-        *result = RLE_LIST_OUT_OF_MEMORY;
+        if (result != NULL){
+            *result = RLE_LIST_OUT_OF_MEMORY;
+        }
         return NULL;
     }
     int i = 0;
@@ -215,7 +214,10 @@ char* RLEListExportToString(RLEList list, RLEListResult* result){
         list=list->next;
     }
     returnedStr[size]='\0';
-    *result=RLE_LIST_SUCCESS;
+    
+    if (result != NULL){
+        *result=RLE_LIST_SUCCESS;   
+    }
     return returnedStr;
 }
 
