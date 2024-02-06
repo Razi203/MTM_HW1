@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "AsciiArtTool.h"
+#include "RLEList.h"
 
 #define INVERTED "-i"
 #define ENCODED "-e"
@@ -53,7 +54,8 @@ int main(int argc, char **argv){
         return 0;
     }
     if (strcmp(flags, ENCODED) == 0){
-        RLEListResult result = asciiArtPrintEncoded(list, target);
+        //RLEListResult result = asciiArtPrintEncoded(list, target);
+        asciiArtPrintEncoded(list, target);
         fclose(source);
         fclose(target);
         RLEListDestroy(list);
@@ -61,7 +63,8 @@ int main(int argc, char **argv){
     }
     if (strcmp(flags, INVERTED) == 0){
         RLEListMap(list, invertChar);
-        RLEListResult result = asciiArtPrint(list, target);
+        //RLEListResult result = asciiArtPrint(list, target);
+        asciiArtPrint(list, target);
         fclose(source);
         fclose(target);
         RLEListDestroy(list);
