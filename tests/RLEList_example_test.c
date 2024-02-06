@@ -28,10 +28,8 @@ static int number_of_tests = sizeof(tests) / sizeof(tests[0]);
 
 int main(int argc, char **argv)
 {
-    
     if (argc == 1)
     {
-        
         for (int test_idx = 0; test_idx < number_of_tests; test_idx++)
         {
             RUN_TEST(tests[test_idx], tests_names[test_idx]);
@@ -79,9 +77,8 @@ bool basicTest(){
     char it;
     for(int i=0; i<RLEListSize(list); i++)
     {
-        
         it=RLEListGet(list, i, NULL);
-        ASSERT_TEST(it == s[i], destroy);
+        ASSERT_TEST(it == s[i++], destroy);
     }
     //check if the length's are equal
     ASSERT_TEST(RLEListSize(list)==strlen(s), destroy);
